@@ -51,7 +51,7 @@ final class CheckoutCompleteOrderApiTest extends JsonApiTestCase
             ])
         ));
         $bus->handle(new ChooseShippingMethod($token, 0, 'DHL'));
-        $bus->handle(new ChoosePaymentMethod($token, 0, 'PBC'));
+        $bus->handle(new ChoosePaymentMethod($token, 'PBC'));
 
         $data =
 <<<EOT
@@ -105,7 +105,7 @@ EOT;
             ])
         ));
         $bus->handle(new ChooseShippingMethod($token, 0, 'DHL'));
-        $bus->handle(new ChoosePaymentMethod($token, 0, 'PBC'));
+        $bus->handle(new ChoosePaymentMethod($token, 'PBC'));
 
         $data =
 <<<EOT
@@ -161,7 +161,7 @@ EOT;
             ])
         ));
         $bus->handle(new ChooseShippingMethod($token, 0, 'DHL'));
-        $bus->handle(new ChoosePaymentMethod($token, 0, 'PBC'));
+        $bus->handle(new ChoosePaymentMethod($token, 'PBC'));
 
         $data =
 <<<EOT
