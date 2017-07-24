@@ -12,8 +12,8 @@ use Sylius\Component\Core\OrderCheckoutTransitions;
 use Sylius\Component\Core\Repository\OrderRepositoryInterface;
 use Sylius\Component\Core\Repository\PaymentMethodRepositoryInterface;
 use Sylius\ShopApiPlugin\Command\ChoosePaymentMethod;
-use Sylius\ShopApiPlugin\Handler\ChoosePaymentMethodHandler;
 use PhpSpec\ObjectBehavior;
+use Sylius\ShopApiPlugin\Model\PaymentStates;
 
 final class ChoosePaymentMethodHandlerSpec extends ObjectBehavior
 {
@@ -35,7 +35,7 @@ final class ChoosePaymentMethodHandlerSpec extends ObjectBehavior
         StateMachineInterface $stateMachine
     ) {
         $orderRepository->findOneBy(['tokenValue' => 'ORDERTOKEN'])->willReturn($order);
-        $order->getPayments()->willReturn([$payment]);
+        $order->getLastPayment(PaymentStates::PAYMENT_CART)->willReturn($payment);
         $paymentMethodRepository->findOneBy(['code' => 'CASH_ON_DELIVERY_METHOD'])->willReturn($paymentMethod);
 
         $stateMachineFactory->get($order, OrderCheckoutTransitions::GRAPH)->willReturn($stateMachine);
@@ -44,7 +44,7 @@ final class ChoosePaymentMethodHandlerSpec extends ObjectBehavior
         $payment->setMethod($paymentMethod)->shouldBeCalled();
         $stateMachine->apply('select_payment')->shouldBeCalled();
 
-        $this->handle(new ChoosePaymentMethod('ORDERTOKEN', 0, 'CASH_ON_DELIVERY_METHOD'));
+        $this->handle(new ChoosePaymentMethod('ORDERTOKEN', 'CASH_ON_DELIVERY_METHOD'));
     }
 
     function it_throws_an_exception_if_order_with_given_token_has_not_been_found(
@@ -58,7 +58,7 @@ final class ChoosePaymentMethodHandlerSpec extends ObjectBehavior
         $this
             ->shouldThrow(\InvalidArgumentException::class)
             ->during('handle', [
-                new ChoosePaymentMethod('ORDERTOKEN', 0, 'CASH_ON_DELIVERY_METHOD'),
+                new ChoosePaymentMethod('ORDERTOKEN', 'CASH_ON_DELIVERY_METHOD'),
             ])
         ;
     }
@@ -82,7 +82,7 @@ final class ChoosePaymentMethodHandlerSpec extends ObjectBehavior
         $this
             ->shouldThrow(\InvalidArgumentException::class)
             ->during('handle', [
-                new ChoosePaymentMethod('ORDERTOKEN', 0, 'CASH_ON_DELIVERY_METHOD'),
+                new ChoosePaymentMethod('ORDERTOKEN', 'CASH_ON_DELIVERY_METHOD'),
             ])
         ;
     }
@@ -106,7 +106,7 @@ final class ChoosePaymentMethodHandlerSpec extends ObjectBehavior
         $this
             ->shouldThrow(\InvalidArgumentException::class)
             ->during('handle', [
-                new ChoosePaymentMethod('ORDERTOKEN', 0, 'CASH_ON_DELIVERY_METHOD'),
+                new ChoosePaymentMethod('ORDERTOKEN', 'CASH_ON_DELIVERY_METHOD'),
             ])
         ;
     }
@@ -122,7 +122,7 @@ final class ChoosePaymentMethodHandlerSpec extends ObjectBehavior
     ) {
         $orderRepository->findOneBy(['tokenValue' => 'ORDERTOKEN'])->willReturn($order);
         $paymentMethodRepository->findOneBy(['code' => 'CASH_ON_DELIVERY_METHOD'])->willReturn($paymentMethod);
-        $order->getPayments()->willReturn([]);
+        $order->getLastPayment(PaymentStates::PAYMENT_CART)->willReturn();
         $stateMachineFactory->get($order, OrderCheckoutTransitions::GRAPH)->willReturn($stateMachine);
         $stateMachine->can('select_payment')->willReturn(true);
 
@@ -132,7 +132,7 @@ final class ChoosePaymentMethodHandlerSpec extends ObjectBehavior
         $this
             ->shouldThrow(\InvalidArgumentException::class)
             ->during('handle', [
-                new ChoosePaymentMethod('ORDERTOKEN', 0, 'CASH_ON_DELIVERY_METHOD'),
+                new ChoosePaymentMethod('ORDERTOKEN', 'CASH_ON_DELIVERY_METHOD'),
             ])
         ;
     }

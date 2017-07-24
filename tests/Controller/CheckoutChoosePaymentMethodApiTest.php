@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Sylius\ShopApiPlugin\Controller;
 
 use Lakion\ApiTestCase\JsonApiTestCase;
@@ -16,7 +18,7 @@ final class CheckoutChoosePaymentMethodApiTest extends JsonApiTestCase
     /**
      * @test
      */
-    public function it_allows_to_choose_payment_method()
+    public function it_allows_to_choose_payment_method(): void
     {
         $this->loadFixturesFromFile('shop.yml');
         $this->loadFixturesFromFile('country.yml');
@@ -58,19 +60,9 @@ final class CheckoutChoosePaymentMethodApiTest extends JsonApiTestCase
         }
 EOT;
 
-        $this->client->request('PUT', $this->getPaymentUrl($token) . '/0', [], [], ['CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json'], $data);
+        $this->client->request('PUT', sprintf('/shop-api/checkout/%s/payment', $token), [], [], ['CONTENT_TYPE' => 'application/json', 'ACCEPT' => 'application/json'], $data);
 
         $response = $this->client->getResponse();
         $this->assertResponseCode($response, Response::HTTP_NO_CONTENT);
-    }
-
-    /**
-     * @param string $token
-     *
-     * @return string
-     */
-    private function getPaymentUrl($token)
-    {
-        return sprintf('/shop-api/checkout/%s/payment', $token);
     }
 }

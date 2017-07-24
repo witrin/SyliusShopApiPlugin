@@ -41,7 +41,6 @@ final class ChoosePaymentMethodAction
     {
         $this->bus->handle(new ChoosePaymentMethod(
             $request->attributes->get('token'),
-            $request->attributes->get('paymentId'),
             $request->request->get('method')
         ));
 

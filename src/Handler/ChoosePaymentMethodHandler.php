@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Sylius\ShopApiPlugin\Handler;
 
 use SM\Factory\FactoryInterface;
@@ -9,30 +11,20 @@ use Sylius\Component\Core\OrderCheckoutTransitions;
 use Sylius\Component\Core\Repository\OrderRepositoryInterface;
 use Sylius\Component\Core\Repository\PaymentMethodRepositoryInterface;
 use Sylius\ShopApiPlugin\Command\ChoosePaymentMethod;
+use Sylius\ShopApiPlugin\Model\PaymentStates;
 use Webmozart\Assert\Assert;
 
 final class ChoosePaymentMethodHandler
 {
-    /**
-     * @var OrderRepositoryInterface
-     */
+    /** @var OrderRepositoryInterface */
     private $orderRepository;
 
-    /**
-     * @var PaymentMethodRepositoryInterface
-     */
+    /** @var PaymentMethodRepositoryInterface */
     private $paymentMethodRepository;
 
-    /**
-     * @var FactoryInterface
-     */
+    /** @var FactoryInterface */
     private $stateMachineFactory;
 
-    /**
-     * @param OrderRepositoryInterface $orderRepository
-     * @param PaymentMethodRepositoryInterface $paymentMethodRepository
-     * @param FactoryInterface $stateMachineFactory
-     */
     public function __construct(
         OrderRepositoryInterface $orderRepository,
         PaymentMethodRepositoryInterface $paymentMethodRepository,
@@ -43,10 +35,7 @@ final class ChoosePaymentMethodHandler
         $this->stateMachineFactory = $stateMachineFactory;
     }
 
-    /**
-     * @param ChoosePaymentMethod $choosePaymentMethod
-     */
-    public function handle(ChoosePaymentMethod $choosePaymentMethod)
+    public function handle(ChoosePaymentMethod $choosePaymentMethod): void
     {
         /** @var OrderInterface $cart */
         $cart = $this->orderRepository->findOneBy(['tokenValue' => $choosePaymentMethod->orderToken()]);
@@ -61,9 +50,10 @@ final class ChoosePaymentMethodHandler
         $paymentMethod = $this->paymentMethodRepository->findOneBy(['code' => $choosePaymentMethod->paymentMethod()]);
 
         Assert::notNull($paymentMethod, 'Payment method has not been found');
-        Assert::true(isset($cart->getPayments()[$choosePaymentMethod->paymentIdentifier()]), 'Payment method has not been found.');
 
-        $payment = $cart->getPayments()[$choosePaymentMethod->paymentIdentifier()];
+        $payment = $cart->getLastPayment(PaymentStates::PAYMENT_CART);
+
+        Assert::notNull($payment, 'Payment method has not been found.');
 
         $payment->setMethod($paymentMethod);
         $stateMachine->apply(OrderCheckoutTransitions::TRANSITION_SELECT_PAYMENT);
