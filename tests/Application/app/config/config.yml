@@ -9,7 +9,6 @@ parameters:
 imports:
     - { resource: "@SyliusCoreBundle/Resources/config/app/config.yml" }
     - { resource: "@SyliusAdminBundle/Resources/config/app/config.yml" }
-    - { resource: "@SyliusShopBundle/Resources/config/app/config.yml" }
     - { resource: "@SyliusAdminApiBundle/Resources/config/app/config.yml" }
 
     - { resource: "@ShopApiPlugin/Resources/config/app/config.yml" }
@@ -48,10 +47,6 @@ fos_rest:
     format_listener:
         rules:
             - { path: '^/shop-api', priorities: ['json'], fallback_format: json, prefer_extension: true }
-
-sylius_shop:
-    checkout_resolver:
-        pattern: "^/shop/checkout"
 
 lexik_jwt_authentication:
     private_key_path: '%jwt_private_key_path%'
